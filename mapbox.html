@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.51.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.51.0/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+    </style>
+  </head>
+
+  <body>
+    <div id='map'></div>
+    <script type="text/javascript">
+      mapboxgl.accessToken = "pk.eyJ1IjoibWFsZWxldyIsImEiOiJjam82ZDdtYmUwanM5M3BwYWh4NjZzNHE3In0.pH-waa0fVyjQowOr1ajV6g";
+
+      var map = new mapboxgl.Map({
+        container: "map",
+        style: 'mapbox://styles/mapbox/light-v9',
+        center: [-117.229010, 32.880891],
+        zoom: 14.1
+      });
+
+      var hoveredStateId =  null;
+
+      map.on("load", function() {
+        map.addSource(
+          "turnout_stats", {
+            "type": "geojson",
+            "data": "https://raw.githubusercontent.com/malelew/ucsd_midterm_elections/master/map_files/turnout.geojson"
+        });
+
+        map.addLayer({
+          "id": "precinct-fills",
+          "type": "fill",
+          "source": "turnout_stats",
+          //"layout": {},
+          "paint": {
+            "fill-color": "#627BC1",
+          },
+        });
+
+        map.addLayer({
+          "id": "precinct-borders",
+          "type": "line",
+          "source": "turnout_stats",
+          "layout": {},
+          "paint": {
+            "line-color": "#0072bc",
+            "line-width": 2
+          },
+        });
+
+      });
+
+    </script>
+
+  </body>
+</html>
