@@ -1,60 +1,169 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8">
-    <title></title>
-    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
-    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.51.0/mapbox-gl.js'></script>
-    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.51.0/mapbox-gl.css' rel='stylesheet' />
-    <style>
-        body { margin:0; padding:0; }
-        #map { position:absolute; top:0; bottom:0; width:100%; }
-    </style>
-  </head>
+<head>
+  <meta charset="utf-8">
+  <title></title>
+  <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+  <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.51.0/mapbox-gl.js'></script>
+  <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.51.0/mapbox-gl.css' rel='stylesheet' />
 
-  <body>
-    <div id='map'></div>
-    <script type="text/javascript">
-      mapboxgl.accessToken = "pk.eyJ1IjoibWFsZWxldyIsImEiOiJjam82ZDdtYmUwanM5M3BwYWh4NjZzNHE3In0.pH-waa0fVyjQowOr1ajV6g";
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
 
-      var map = new mapboxgl.Map({
-        container: "map",
-        style: 'mapbox://styles/mapbox/light-v9',
-        center: [-117.229010, 32.880891],
-        zoom: 14.1
+  <style>
+  body { margin:0; padding:200; }
+  #map { position:absolute; top:0; bottom:0; width:100%; }
+  </style>
+</head>
+
+<body>
+  <div id='map'></div>
+  <span class="filter" style="position: absolute">
+  <select name="slct" id="slct">
+      <option value="governor">GOVERNOR</option>
+      <option value="lieutenant_governor">LIEUTENANT GOVERNOR</option>
+      <option value="lieutenant_governor">CONTROLLER</option>
+  </select>
+  </span>
+  <script type="text/javascript">
+  mapboxgl.accessToken = "pk.eyJ1IjoibWFsZWxldyIsImEiOiJjam82ZDdtYmUwanM5M3BwYWh4NjZzNHE3In0.pH-waa0fVyjQowOr1ajV6g";
+
+  var map = new mapboxgl.Map({
+    container: "map",
+    style: 'mapbox://styles/mapbox/light-v9',
+    center: [-117.229010, 32.880891],
+    zoom: 14.1
+  });
+
+  var race = document.getElementById('slct')
+  race = (race[race.selectedIndex].value)
+
+  fill_colors = ["red", "green", "lightblue", "red", "blue"]
+
+  String.prototype.replaceAll = function(search, replacement) {
+    var target = this;
+    return target.replace(new RegExp(search, 'g'), replacement);
+  };
+
+  map.on("load", function() {
+    // import the geojson dataset from github
+    map.addSource(
+      "turnout_stats", {
+        "type": "geojson",
+        "data": "https://raw.githubusercontent.com/malelew/ucsd_midterm_elections/master/map_files/ucsd_precincts_res.geojson",
+        "generateId": true
+    });
+
+      // add precinct layers
+      map.addLayer({
+        "id": "precinct-fills",
+        "type": "fill",
+        "source": "turnout_stats",
+        "paint": {
+          "fill-color": [
+            "match",
+            ["get", race + "_color"],
+            "0", "red",
+            "1", "green",
+            "2", "lightblue",
+            "3", "red",
+            "4", "blue",
+            "black"
+          ],
+          "fill-opacity": ["case",
+          ["boolean", ["feature-state", "hover"], false],
+          1,
+          0.5
+          ]
+        },
       });
 
-      var hoveredStateId =  null;
+      // add precinct borders
+      map.addLayer({
+        "id": "precinct-borders",
+        "type": "line",
+        "source": "turnout_stats",
+        "layout": {},
+        "paint": {
+          "line-color": "black",
+          "line-width": 2
+        },
+      });
 
-      map.on("load", function() {
-        map.addSource(
-          "turnout_stats", {
-            "type": "geojson",
-            "data": "https://raw.githubusercontent.com/malelew/ucsd_midterm_elections/master/map_files/turnout.geojson"
-        });
+      // Create a popup, but don't add it to the map yet.
+      var popup = new mapboxgl.Popup({
+        closeButton: false,
+        closeOnClick: false
+      });
 
+      map.on('click', 'precinct-fills', function(e) {
+        // Change the cursor style as a UI indicator.
+        map.getCanvas().style.cursor = 'pointer';
+
+        popuphtml = ""
+
+        var coordinates = e.lngLat;
+        var contestname = race.replaceAll("_", " ").toUpperCase();
+        var turnout = e.features[0].properties.voterturnout;
+        var winner = e.features[0].properties[race + "_winner"];
+        var loser = e.features[0].properties[race + "_loser"];
+        var winnerperc = e.features[0].properties[race + "_winner_perc"];
+        var totalvotes = e.features[0].properties[race + "_total_votes"];
+        var precinctturnout = e.features[0].properties["voterturnout"]
+
+        popuphtml += "<b>" + contestname + "</b>" + "<br>" +
+        "<p>WIN: "+ winner + "</p>" +
+        "<p>LOSE: "+ loser + "</p>" +
+        "<p>WINNING PERCENTAGE: " + String(winnerperc).slice(0,-1) + "%</p>" +
+        "<p>TOTAL VOTES: "+ String(totalvotes) +"</p>" +
+        "<p>TURNOUT: " + String(precinctturnout) + "</p>";
+
+        // Populate the popup and set its coordinates
+        // based on the feature found.
+        popup.setLngLat(coordinates)
+        .setHTML(popuphtml)
+        .addTo(map);
+      });
+
+      map.on("mouseleave", "precinct-fills", function(){
+        map.getCanvas().style.cursor = '';
+        popup.remove();
+      });
+
+      document.getElementById('slct').addEventListener('change', function() {
+        race = document.getElementById('slct')
+        race = (race[race.selectedIndex].value)
+
+        map.removeLayer("precinct-fills")
+
+        // add precinct layers
         map.addLayer({
           "id": "precinct-fills",
           "type": "fill",
           "source": "turnout_stats",
-          //"layout": {},
           "paint": {
-            "fill-color": "#627BC1",
+            "fill-color": [
+              "match",
+              ["get", race + "_color"],
+              "0", "red",
+              "1", "green",
+              "2", "lightblue",
+              "3", "red",
+              "4", "blue",
+              "black"
+            ],
+            "fill-opacity": ["case",
+            ["boolean", ["feature-state", "hover"], false],
+            1,
+            0.5
+          ]
           },
-        });
-
-        map.addLayer({
-          "id": "precinct-borders",
-          "type": "line",
-          "source": "turnout_stats",
-          "layout": {},
-          "paint": {
-            "line-color": "#0072bc",
-            "line-width": 2
-          },
-        });
-
+        },  "precinct-borders");
       });
+
+    });
 
     </script>
 
