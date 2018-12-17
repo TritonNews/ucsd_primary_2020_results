@@ -11,6 +11,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="./js/midterms_map.js"></script>
+
+  <link rel="stylesheet" href="css/midterms_map.css">
 
   <style>
   body { margin:0; padding:200; }
@@ -20,13 +23,24 @@
 
 <body>
   <div id='map'></div>
+
   <span class="filter" style="position: absolute">
-  <select name="slct" id="slct">
+    <select name="slct" id="slct">
       <option value="governor">GOVERNOR</option>
       <option value="lieutenant_governor">LIEUTENANT GOVERNOR</option>
-      <option value="controller">CONTROLLER</option>
-  </select>
+      <option value="united_states_senator">UNITED STATES SENATOR</option>
+      <option value="board_of_supervisors_district_no._4">BOARD OF SUPERVISORS DISTRICT NO. 4</option>
+      <option value="superintendent_of_public_instruction">SUPERINTENDENT OF PUBLIC INSTRUCTION</option>
+      <option value="prop_6_eliminates_road_repair/trans._funding">PROP 6 ELIMINATES ROAD REPAIR/TRANS. FUNDING</option>
+      <option value="prop_10_enact_rent_control">PROP 10 ENACT RENT CONTROL</option>
+      <option value="measure_e-_city_of_san_diego_soccer_city">MEASURE E- CITY OF SAN DIEGO SOCCER CITY</option>
+      <option value="measure_g-_city_of_san_diego_sdsu_west">MEASURE G- CITY OF SAN DIEGO SDSU WEST</option>
+      <option value="" disabled>--------------------------</option>
+    </select>
   </span>
+
+  <div class='map-overlay' id='legend'></div>
+
   <script type="text/javascript">
   mapboxgl.accessToken = "pk.eyJ1IjoibWFsZWxldyIsImEiOiJjam82ZDdtYmUwanM5M3BwYWh4NjZzNHE3In0.pH-waa0fVyjQowOr1ajV6g";
 
@@ -40,7 +54,7 @@
   var race = document.getElementById('slct')
   race = (race[race.selectedIndex].value)
 
-  fill_colors = ["red", "green", "lightblue", "red", "blue"]
+  party_affil = ["", "", " (D) ", " (R) ", " (D) "]
 
   String.prototype.replaceAll = function(search, replacement) {
     var target = this;
@@ -54,30 +68,6 @@
         "type": "geojson",
         "data": "https://raw.githubusercontent.com/malelew/ucsd_midterm_elections/master/map_files/ucsd_precincts_res.geojson",
         "generateId": true
-    });
-
-      // add precinct layers
-      map.addLayer({
-        "id": "precinct-fills",
-        "type": "fill",
-        "source": "turnout_stats",
-        "paint": {
-          "fill-color": [
-            "match",
-            ["get", race + "_color"],
-            "0", "red",
-            "1", "green",
-            "2", "lightblue",
-            "3", "red",
-            "4", "blue",
-            "black"
-          ],
-          "fill-opacity": ["case",
-          ["boolean", ["feature-state", "hover"], false],
-          1,
-          0.5
-          ]
-        },
       });
 
       // add precinct borders
@@ -91,6 +81,9 @@
           "line-width": 2
         },
       });
+
+      // add precinct fills for the contenst winner and draw the legend
+      draw_precints(map, 1)
 
       // Create a popup, but don't add it to the map yet.
       var popup = new mapboxgl.Popup({
@@ -110,13 +103,17 @@
         var winner = e.features[0].properties[race + "_winner"];
         var loser = e.features[0].properties[race + "_loser"];
         var winnerperc = e.features[0].properties[race + "_winner_perc"];
+        var loserperc = e.features[0].properties[race + "_loser_perc"];
         var totalvotes = e.features[0].properties[race + "_total_votes"];
         var precinctturnout = e.features[0].properties["voterturnout"]
+        var wparty_code = e.features[0].properties[race + "_wparty"];
+        var lparty_code = e.features[0].properties[race + "_lparty"];
+
+        console.log(e.features[0].properties[race + "_wparty"]);
 
         popuphtml += "<b>" + contestname + "</b>" + "<br>" +
-        "<p>WIN: "+ winner + "</p>" +
-        "<p>LOSE: "+ loser + "</p>" +
-        "<p>WINNING PERCENTAGE: " + String(winnerperc).slice(0,-1) + "%</p>" +
+        "<p>WIN: "+ winner + party_affil[wparty_code] + " – " + String(winnerperc) + "%</p>" +
+        "<p>LOSE: "+ loser + party_affil[lparty_code] + " – " + String(loserperc) + "%</p>" +
         "<p>TOTAL VOTES: "+ String(totalvotes) +"</p>" +
         "<p>TURNOUT: " + String(precinctturnout) + "</p>";
 
@@ -133,35 +130,9 @@
       });
 
       document.getElementById('slct').addEventListener('change', function() {
-        race = document.getElementById('slct')
-        race = (race[race.selectedIndex].value)
-
-        map.removeLayer("precinct-fills")
-
-        // add precinct layers
-        map.addLayer({
-          "id": "precinct-fills",
-          "type": "fill",
-          "source": "turnout_stats",
-          "paint": {
-            "fill-color": [
-              "match",
-              ["get", race + "_color"],
-              "0", "red",
-              "1", "green",
-              "2", "lightblue",
-              "3", "red",
-              "4", "blue",
-              "black"
-            ],
-            "fill-opacity": ["case",
-            ["boolean", ["feature-state", "hover"], false],
-            1,
-            0.5
-          ]
-          },
-        },  "precinct-borders");
+        draw_precints(map)
       });
+
 
     });
 
