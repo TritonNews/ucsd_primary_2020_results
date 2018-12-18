@@ -126,10 +126,10 @@
 
       map.on("mouseleave", "precinct-fills", function(){
         map.getCanvas().style.cursor = '';
-        popup.remove();
       });
 
       document.getElementById('slct').addEventListener('change', function() {
+        popup.remove();
         draw_precints(map)
       });
 
