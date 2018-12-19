@@ -29,13 +29,39 @@
       <option value="governor">GOVERNOR</option>
       <option value="lieutenant_governor">LIEUTENANT GOVERNOR</option>
       <option value="united_states_senator">UNITED STATES SENATOR</option>
+      <option value="us_representative">US HOUSE REPRESENTATIVE</option>
       <option value="board_of_supervisors_district_no._4">BOARD OF SUPERVISORS DISTRICT NO. 4</option>
       <option value="superintendent_of_public_instruction">SUPERINTENDENT OF PUBLIC INSTRUCTION</option>
+      <option value="prop_1_authorizes_bonds_to_fund_housing_pgms">PROP 1 AUTHORIZES BONDS TO FUND HOUSING PGMS</option>
       <option value="prop_6_eliminates_road_repair/trans._funding">PROP 6 ELIMINATES ROAD REPAIR/TRANS. FUNDING</option>
       <option value="prop_10_enact_rent_control">PROP 10 ENACT RENT CONTROL</option>
+      <option value="prop_12_establishes_new_standards_farm_animals">PROP 12 ESTABLISHES NEW STANDARDS FARM ANIMALS</option>
       <option value="measure_e-_city_of_san_diego_soccer_city">MEASURE E- CITY OF SAN DIEGO SOCCER CITY</option>
       <option value="measure_g-_city_of_san_diego_sdsu_west">MEASURE G- CITY OF SAN DIEGO SDSU WEST</option>
       <option value="" disabled>--------------------------</option>
+      <option value="attorney_general">ATTORNEY GENERAL</option>
+      <option value="controller">CONTROLLER</option>
+      <option value="insurance_commissioner">INSURANCE COMMISSIONER</option>
+      <option value="state_assembly_78th_dist">STATE ASSEMBLY 78TH DIST</option>
+      <option value="treasurer">TREASURER</option>
+      <option value="prop_2_authorizes_bonds_to_fund_exist._housing_pgm">PROP 2 AUTHORIZES BONDS TO FUND EXIST. HOUSING PGM</option>
+      <option value="prop_3_authorizes_bonds_fund_projects_wtr">PROP 3 AUTHORIZES BONDS FUND PROJECTS WTR</option>
+      <option value="prop_4_authorizes_bonds_funding_const._hosp.">PROP 4 AUTHORIZES BONDS FUNDING CONST. HOSP.</option>
+      <option value="prop_5_changes_req._certain_property_owners">ROP 5 CHANGES REQ. CERTAIN PROPERTY OWNERS</option>
+      <option value="prop_7_daylight_saving_time">PROP 7 DAYLIGHT SAVING TIME</option>
+      <option value="prop_8_regulates_kidney_dialysis">PROP 8 REGULATES KIDNEY DIALYSIS CLINICS</option>
+      <option value="prop_11_private-sector_emer._ambulance">PROP 11 PRIVATE-SECTOR EMER. AMBULANCE</option>
+      <option value='measure_a-_san_diego_county_ch._amd._"clean-up"'>MEASURE A</option>
+      <option value="measure_b-_san_diego_county_ch._amd._rep._uninc._areas">MEASURE B</option>
+      <option value="measure_c-_san_diego_county_ch._amd._good_govt.">MEASURE C</option>
+      <option value="measure_d-_san_diego_county_ch._amd._req._run-off_elects.">MEASURE D</option>
+      <option value="measure_h-_sd_un_schl_dist_term_limits">MEASURE H</option>
+      <option value="measure_j-_city_of_san_diego_ch._amd._disc._business_interest">MEASURE J</option>
+      <option value="measure_k-_city_of_san_diego_ch._amd._limit_2-four_yr_trms">MEASURE K</option>
+      <option value="measure_l-_city_of_san_diego_ch._amd._ethics-comp.">MEASURE L</option>
+      <option value="measure_m-_city_of_san_diego_ch._amd._appt._audit_com">MEASURE M</option>
+      <option value="measure_n-_city_of_san_diego_reinstate_disability_retirement_p.o.">MEASURE N</option>
+      <option value="measure_yy-_sd_un_schl_dist_$3.5b_bonds_(req_55%)">MEASURE YY</option>
     </select>
   </span>
 
@@ -102,9 +128,9 @@
         var turnout = e.features[0].properties.voterturnout;
         var winner = e.features[0].properties[race + "_winner"];
         var loser = e.features[0].properties[race + "_loser"];
-        var winnerperc = e.features[0].properties[race + "_winner_perc"];
-        var loserperc = e.features[0].properties[race + "_loser_perc"];
-        var totalvotes = e.features[0].properties[race + "_total_votes"];
+        var winnerperc = e.features[0].properties[race + "_winnerperc"];
+        var loserperc = e.features[0].properties[race + "_loserperc"];
+        var totalvotes = e.features[0].properties[race + "_totalvotes"];
         var precinctturnout = e.features[0].properties["voterturnout"]
         var wparty_code = e.features[0].properties[race + "_wparty"];
         var lparty_code = e.features[0].properties[race + "_lparty"];
